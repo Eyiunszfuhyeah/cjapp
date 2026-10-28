@@ -1,4 +1,3 @@
-// app.json
 {
   "expo": {
     "name": "CineJoy",
@@ -12,12 +11,20 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.cinejoy.app",
-      "permissions": ["INTERNET"]
+      "permissions": [
+        "INTERNET"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7d8eb70c-cc66-464e-b866-121e8b19f4f0"
+      }
     }
   }
 }
