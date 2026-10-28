@@ -1,4 +1,4 @@
-# .github/workflows/build.yml
+
 name: Build iOS IPA
 
 on:
@@ -9,27 +9,34 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Node
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm install
 
-      - name: Export web bundle
-        run: npx expo export --platform ios
-
       - name: Install Capacitor
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/ios
-          npx cap add ios || true
-          npx cap sync ios
+        run: npm install @capacitor/core @capacitor/cli @capacitor/ios
 
-      - name: Build unsigned IPA
+      - name: Check project configuration
+        run: |
+          test -f package.json
+          test -f capacitor.config.ts || test -f capacitor.config.json || test -f capacitor.config.js
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync web app
+        run: npx cap sync ios
+
+      - name: Build unsigned iOS app
         run: |
           cd ios/App
           xcodebuild \
@@ -37,17 +44,18 @@ jobs:
             -scheme App \
             -configuration Release \
             -derivedDataPath build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             -sdk iphoneos \
             build
+
+      - name: Package IPA
+        run: |
           mkdir -p Payload
-          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
-          zip -r CineJoy.ipa Payload/
+          cp -R ios/App/build/Build/Products/Release-iphoneos/App.app Payload/
+          /usr/bin/zip -qr CineJoy.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: CineJoy-IPA
-          path: ios/App/CineJoy.ipa
+          path: CineJoy.ipa
